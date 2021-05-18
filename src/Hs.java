@@ -186,5 +186,64 @@ public class Hs {
       System.out.print(histogram[i] + " ");
     }
     System.out.println();
+
+    // Mengembalikan ke gambar awal (Tanpa secret message)
+    int zeroLength = 0;
+    String header = secret.substring(secret.length() - zeroLength, secret.length());
+    int headerIndex = 0;
+    if (peak < zero) {
+      for (int y = 0; y < cover.length; y++) {
+        for (int x = 0; x < cover[y].length; x++) {
+          int temp = (cover[y][x] >> 16) & 0xff;
+          if (temp > peak && temp < zero) {
+            temp--;
+            Color pixel = new Color(temp, (cover[y][x] >> 8) & 0xff, cover[y][x] & 0xff, (cover[y][x] >> 24) & 0xff);
+            cover[y][x] = pixel.getRGB();
+          } else if (temp == zero) {
+            temp--;
+            Color pixel = new Color(temp, (cover[y][x] >> 8) & 0xff, cover[y][x] & 0xff, (cover[y][x] >> 24) & 0xff);
+            cover[y][x] = pixel.getRGB();
+            headerIndex++;
+          }
+        }
+      }
+    } else if (peak > zero) {
+      for (int y = 0; y < cover.length; y++) {
+        for (int x = 0; x < cover[y].length; x++) {
+          int temp = (cover[y][x] >> 16) & 0xff;
+          if (temp < peak && temp > zero) {
+            temp++;
+            Color pixel = new Color(temp, (cover[y][x] >> 8) & 0xff, cover[y][x] & 0xff, (cover[y][x] >> 24) & 0xff);
+            cover[y][x] = pixel.getRGB();
+          } else if (temp == zero) {
+            if (Integer.parseInt(header.substring(headerIndex, headerIndex + 1), 2) == 1) {
+              temp++;
+              Color pixel = new Color(temp, (cover[y][x] >> 8) & 0xff, cover[y][x] & 0xff, (cover[y][x] >> 24) & 0xff);
+              cover[y][x] = pixel.getRGB();
+            }
+            headerIndex++;
+          }
+        }
+      }
+    }
+
+    histogram = Helper.getHistogramFromArgb(cover);
+
+    System.out.print("Histogram : ");
+    for (int i = 0; i < histogram.length; i++) {
+      System.out.print(histogram[i] + " ");
+    }
+    System.out.println();
+
+    BufferedImage image = new BufferedImage(cover[0].length, cover.length, BufferedImage.TYPE_4BYTE_ABGR);
+    for (int y = 0; y < cover.length; y++) {
+      for (int x = 0; x < cover[y].length; x++) {
+        image.setRGB(x, y, cover[y][x]);
+      }
+    }
+
+    String fileExt = Helper.getFileExtension(imageFile.getName());
+    String fileOutput = "E:/Coding/Java/Project/Steganography/src/extraction_images/" + imageFile.getName();
+    Helper.createImageFile(image, fileExt, fileOutput);
   }
 }
